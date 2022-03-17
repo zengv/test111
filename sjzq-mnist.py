@@ -15,12 +15,12 @@ transform = transforms.Compose(
      transforms.RandomHorizontalFlip(),
      transforms.RandomGrayscale(),
      transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+     ])
 
 
 # 下载数据集
 train_dataset = torchvision.datasets.MNIST(root=data_path, train=True, download=False, transform=transform)
-test_set = torchvision.datasets.MNIST(root=data_path, train=False, download=False,  transform=transform)
+test_set = torchvision.datasets.MNIST(root=data_path, train=False, download=False,  transform=transforms.ToTensor())
 
 batch_size = 100
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
