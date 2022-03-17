@@ -2,34 +2,42 @@ from __future__ import print_function
 import torch
 import torchvision
 import torchvision.transforms as transforms
-# import os
+import os
 import time
 import matplotlib.pyplot as plt
 # ----------------------------------------数据集获取----------------------------------------
-names = 'spiking_model'    # 数据集文件名称
+names = 'sjzq_mnist'    # 数据集文件名称
 data_path = './dataset/'      # 数据集保存路径
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+transform = transforms.Compose(
+    [
+     transforms.RandomHorizontalFlip(),
+     transforms.RandomGrayscale(),
+     transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+
+
 # 下载数据集
-train_dataset = torchvision.datasets.MNIST(root=data_path, train=True, download=False, transform=transforms.ToTensor())
-test_set = torchvision.datasets.MNIST(root=data_path, train=False, download=False,  transform=transforms.ToTensor())
+train_dataset = torchvision.datasets.MNIST(root=data_path, train=True, download=False, transform=transform)
+test_set = torchvision.datasets.MNIST(root=data_path, train=False, download=False,  transform=transform)
 
 batch_size = 100
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=False, num_workers=0)
 test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, num_workers=0)
 
-print(type(train_dataset))
-print('-----------------------------------------------------')
-print(train_dataset)
-print('-----------------------------------------------------')
-print(type(test_set))
-print('-----------------------------------------------------')
-print(test_set)
+# print(type(train_dataset))
+# print('-----------------------------------------------------')
+# print(train_dataset)
+# print('-----------------------------------------------------')
+# print(type(test_set))
+# print('-----------------------------------------------------')
+# print(test_set)
 
 '''打开数据集中的图片,打开测试集中的图片'''
 train_data, train_label = next(iter(train_loader))
 test_data, test_label = next(iter(test_loader))
-print(train_data.shape)
+# print(train_data.shape)
 
 
 # print('--------------------------【方式一】用2个变量承接--------------------------')
@@ -268,10 +276,22 @@ for epoch in range(num_epochs):
 
     test_acc = 100 * correct / total
     print('Test Accuracy of the model on the 10000 test images: %.3f' % test_acc, '\n')
+
+    if epoch % 20 == 0:
+        print('Saving..')
+        state = {
+            'net': snn.state_dict(),
+            'test_acc': test_acc,
+            'epoch': epoch,
+            'test_acc_record': test_acc_record,
+        }
+        if not os.path.isdir('checkpoint'):
+            os.mkdir('checkpoint')
+        torch.save(state, './checkpoint/ckpt' + names + '.t7')
+
     test_acc_record.append(test_acc)  # 记录每一轮epoch中在测试集中的准确度
     test_loss_record.append(test_loss)
     test_loss = 0
-
     epoch_record.append(epoch)
     history_dic = {
         'epoch_list': epoch_record,
